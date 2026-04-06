@@ -390,21 +390,13 @@
         {en:"Zygomatic Fracture",zh:"顴骨骨折"}
     ];
 
-    // 初始化儲存空間
+     // 初始化儲存空間
     let weakWords = JSON.parse(localStorage.getItem('medical_weak_list')) || [];
-    let targetVoice = null;
     let batch = [], idx = 0, currentMode = '';
 
+    // 語音初始化：僅確保權限開啟，不再過濾特定人名聲音
     function initAudioContext() {
-        if (!targetVoice) loadVoices();
-    }
-
-    function loadVoices() {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length === 0) return;
-        // 優先找 Alex 或 Tom，找不到則使用第一個英文語音
-        targetVoice = voices.find(v => v.name.includes('Alex') || v.name.includes('Tom')) || 
-                      voices.find(v => v.lang.includes('en'));
+        window.speechSynthesis.getVoices();
     }
 
     function toggleWeak() {
@@ -488,7 +480,6 @@
         
         document.getElementById('progress').innerText = `${idx+1} / ${batch.length}`;
         
-        // 非練習模式時切換單字自動發音
         if (isHidden) setTimeout(speak, 300);
     }
 
@@ -497,7 +488,7 @@
         document.getElementById('q-zh').classList.remove('hidden');
     }
 
-    // 修復：正確計算上一個索引
+    // 修復後的 prev：確保正確向上循環
     function prev() { 
         idx = (idx - 1 + batch.length) % batch.length; 
         updateUI(); 
@@ -508,13 +499,12 @@
         updateUI(); 
     }
 
-    // 修復：發音函數增加語音庫套用
+    // 簡化後的發音：直接使用系統預設聲音
     function speak() {
         window.speechSynthesis.cancel();
         if (!batch[idx]) return;
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
-        if (targetVoice) msg.voice = targetVoice;
-        msg.lang = 'en-US';
+        msg.lang = 'en-US'; // 強制指定美式英語語系
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
@@ -522,7 +512,6 @@
     function speakWord(t) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(t);
-        if (targetVoice) msg.voice = targetVoice;
         msg.lang = 'en-US';
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
@@ -547,10 +536,8 @@
     }
 
     initMenu();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = loadVoices;
-    }
 </script>
+
 </body>
 </html>
 
