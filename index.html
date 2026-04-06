@@ -391,8 +391,20 @@
     ];
 
 
-   let targetVoice = null;
+   <script>
+    // 1. 所有的單字資料 (保留你原本的 allWords 陣列)
+    const allWords = [
+        {en:"Abdominal pain",zh:"腹部疼痛"},
+        // ... (中間省略，請保留你原本那 314 個單字)
+        {en:"Zygomatic Fracture",zh:"顴骨骨折"}
+    ];
 
+    // 2. 重要：補回漏掉的 weakWords 定義 (LocalStorage)
+    let weakWords = JSON.parse(localStorage.getItem('med_weak_list')) || [];
+    let targetVoice = null;
+    let batch = [], idx = 0, currentMode = '';
+
+    // 3. 語音相關邏輯 (整合你分開寫的兩段)
     function initAudioContext() {
         if (!targetVoice) {
             window.speechSynthesis.getVoices();
@@ -403,29 +415,23 @@
     function loadVoices() {
         const voices = window.speechSynthesis.getVoices();
         if (voices.length === 0) return;
-        
-        targetVoice = voices.find(v => v.name === 'Alex' || v.name.includes('Alex'));
+        // 優先找 Alex 或 Tom
+        targetVoice = voices.find(v => v.name.includes('Alex') || v.name.includes('Tom') || v.lang === 'en-US');
         const statusEl = document.getElementById('voice-status');
-
-        if (targetVoice) {
-            statusEl.innerText = "IOS26使用者可至設定-輔助使用-閱讀與朗讀-聲音-英語-下載Tom(增強音質)-點擊設為預設";
-            statusEl.style.color = "#2ecc71";
-        } else {
-            statusEl.innerText = "IOS26使用者可至設定-輔助使用-閱讀與朗讀-聲音-英語-下載Tom(增強音質)-點擊設為預設";
+        if (statusEl) {
             statusEl.style.color = "#2ecc71";
         }
     }
 
+    // 監聽聲音清單變化
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
     }
 
-
-
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
+    // 4. 弱項清單邏輯
     function updateWeakMenu() {
         const container = document.getElementById('weak-menu-item');
+        if (!container) return;
         container.innerHTML = '';
         if (weakWords.length > 0) {
             let div = document.createElement('div');
@@ -454,6 +460,7 @@
         updateWeakMenu();
     }
 
+    // 5. 畫面切換與模式設定
     function startApp(groupType, rangeIdx) {
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
@@ -474,19 +481,30 @@
 
     function setMode(m) {
         currentMode = m;
-        if (m === 'random' || m === 'exam') batch.sort(() => Math.random() - 0.5);
+        if (m === 'random' || m === 'exam') {
+            batch = [...batch].sort(() => Math.random() - 0.5);
+        }
         idx = 0;
         updateUI();
     }
 
+    // 6. UI 更新 (包含單字拆解發音)
     function updateUI() {
         window.speechSynthesis.cancel();
+        if (batch.length === 0) return;
+        
         const wordObj = batch[idx];
         const qEn = document.getElementById('q-en');
         const star = document.getElementById('star-icon');
         
-        star.className = weakWords.includes(wordObj.en) ? 'btn-star active' : 'btn-star';
+        // 更新星星顏色
+        if (weakWords.includes(wordObj.en)) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
         
+        // 建立單字點擊發音
         qEn.innerHTML = '';
         wordObj.en.split(' ').forEach((w, i, arr) => {
             const span = document.createElement('span');
@@ -498,12 +516,12 @@
 
         document.getElementById('q-zh').innerText = wordObj.zh;
         
-        const hide = (currentMode !== 'learn');
-        qEn.classList.toggle('hidden', hide);
-        document.getElementById('q-zh').classList.toggle('hidden', hide);
+        const isHidden = (currentMode !== 'learn');
+        qEn.classList.toggle('hidden', isHidden);
+        document.getElementById('q-zh').classList.toggle('hidden', isHidden);
         
         document.getElementById('progress').innerText = `${idx + 1} / ${batch.length}`;
-        if(hide) setTimeout(speak, 300);
+        if(isHidden) setTimeout(speak, 300);
     }
 
     function reveal() {
@@ -514,40 +532,31 @@
     function next() { idx = (idx + 1) % batch.length; updateUI(); }
     function prev() { idx = (idx - 1 + batch.length) % batch.length; updateUI(); }
 
-    
-        // 專門用於唸整句的按鈕
+    // 7. 語音執行
     function speak() { 
         window.speechSynthesis.cancel();
+        if (!batch[idx]) return;
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
-        
-        if (targetVoice) {
-            msg.voice = targetVoice;
-        } else {
-            msg.lang = 'en-US';
-        }
-        
+        msg.voice = targetVoice;
+        msg.lang = 'en-US';
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
 
-    // 專門用於唸單一單字的新增功能
     function speakWord(text) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
-        
-        if (targetVoice) {
-            msg.voice = targetVoice;
-        } else {
-            msg.lang = 'en-US';
-        }
-        
+        msg.voice = targetVoice;
+        msg.lang = 'en-US';
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
 
+    // 8. 初始化選單
     function initMenu() {
         updateWeakMenu();
         const container = document.getElementById('menu-items');
+        if (!container) return;
         for(let i=0; i<Math.ceil(allWords.length/15); i++) {
             let div = document.createElement('div');
             div.className = 'menu-item';
@@ -556,6 +565,8 @@
             container.appendChild(div);
         }
     }
+
+    // 正式啟動
 
     initMenu();
 </script>
