@@ -3,53 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>醫用英語 314 完整版 - 祝考試歐趴</title>
+    <title>醫用英語 - 祝大家考試歐趴</title>
     <style>
-        :root { --primary: #3498db; --bg: #2c3e50; --accent: #2ecc71; --warning: #f1c40f; --danger: #e74c3c; }
+        :root { --primary: #3498db; --bg: #2c3e50; --accent: #2ecc71; }
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: white; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; touch-action: manipulation; }
         .container { width: 100%; max-width: 500px; }
         
-        .settings-panel { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); width: 100%; text-align: center; }
-        input[type="range"] { width: 100%; margin: 10px 0; -webkit-appearance: none; background: transparent; }
+        .settings-panel { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); width: 100%; text-align: center; }
+        input[type="range"] { width: 100%; margin: 15px 0 5px 0; -webkit-appearance: none; background: transparent; }
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #7f8c8d; border-radius: 5px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 26px; width: 26px; border-radius: 50%; background: var(--accent); margin-top: -9px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        label { font-size: 0.95em; color: #bdc3c7; font-weight: bold; display: block; }
+        #voice-status { font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: #f1c40f; }
         
-        .menu-item { background: white; color: #2c3e50; padding: 18px; margin-bottom: 12px; border-radius: 12px; cursor: pointer; border-left: 6px solid var(--primary); font-size: 1.1em; transition: 0.2s; }
-        .menu-item:active { transform: scale(0.98); }
-        .menu-item.weak-list { border-left-color: var(--warning); background: #fff9e6; }
-        
+        .menu-item { background: white; color: #2c3e50; padding: 18px; margin-bottom: 12px; border-radius: 12px; cursor: pointer; border-left: 6px solid var(--primary); font-size: 1.1em; }
         #app-screen { display: none; width: 100%; }
-        #mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; width: 100%; }
         
-        .card { background: white; color: #2c3e50; height: 260px; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 25px 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; position: relative; overflow: hidden; }
-        .word-en { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; min-height: 2.2em; display: flex; align-items: center; justify-content: center; word-break: break-word; line-height: 1.2; width: 100%; flex-wrap: wrap; gap: 0.3em; }
-        .word-en span { border-bottom: 2px solid #eee; }
-        .word-zh { font-size: 1.3em; color: #34495e; font-weight: bold; }
-        .hidden { visibility: hidden; }
+        /* 使用 Grid 讓 4 個按鈕完美對齊 */
+        #mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; width: 100%; }
         
-        .btn-star { position: absolute; top: 15px; right: 15px; font-size: 2em; cursor: pointer; color: #ddd; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
-        .btn-star.active { color: var(--warning); transform: scale(1.1); }
+        .card { background: white; color: #2c3e50; height: 260px; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 25px 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; }
+        .word-en { font-size: 1.55em; font-weight: bold; margin-bottom: 10px; min-height: 2.2em; display: flex; align-items: center; justify-content: center; word-break: break-word; line-height: 1.2; width: 100%; flex-wrap: wrap; gap: 0.2em; }
+        .hidden { display: none !important; }
+        
+        .btn-speak { background: var(--accent); font-size: 2.2em; width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin: 15px 0; padding: 0; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .nav-btn { background: #7f8c8d; padding: 15px; border-radius: 10px; color: white; border: none; font-weight: bold; width: 100%; text-align: center; font-size: 1em; cursor: pointer; }
+        .btn-back { background: #e74c3c; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 10px; color: white; border: none; font-size: 1.1em; font-weight: bold; cursor: pointer; }
+         /* 收藏星星樣式 */
+        .btn-star { position: absolute; top: 15px; right: 15px; font-size: 1.8em; cursor: pointer; color: #ccc; transition: 0.2s; }
+        .btn-star.active { color: var(--warning); transform: scale(1.2); }
 
-        .btn-speak { background: var(--accent); font-size: 2.2em; width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin: 15px 0; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .nav-btn { background: #7f8c8d; padding: 15px; border-radius: 10px; color: white; border: none; font-weight: bold; width: 100%; font-size: 1em; cursor: pointer; }
-        .btn-back { background: var(--danger); width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 10px; color: white; border: none; font-size: 1.1em; font-weight: bold; }
-        #progress { text-align: center; margin-top: 15px; color: #bdc3c7; font-weight: bold; }
+        .btn-speak { background: var(--accent); font-size: 2.2em; width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin: 15px 0; padding: 0; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .nav-btn { background: #7f8c8d; padding: 15px; border-radius: 10px; color: white; border: none; font-weight: bold; width: 100%; text-align: center; font-size: 1em; cursor: pointer; }
+        .btn-back { background: #e74c3c; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 10px; color: white; border: none; font-size: 1.1em; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body onpointerdown="initAudioContext()">
 
 <div class="container" id="menu-screen">
-    <h1 style="text-align: center; margin: 10px 0;">🚑 醫用單字全集</h1>
+    <h1 style="text-align: center; margin-bottom: 15px;">🚑 醫用單字排程</h1>
     
     <div class="settings-panel">
-        <div id="voice-status" style="font-size:0.85em; margin-bottom:10px; color:#f1c40f;">點擊單字可發音，星星可收藏弱項。</div>
+        <div id="voice-status">2026.4.3新增功能：點擊單字音節可單獨發音唷。請讀之前再對一下單字及中文是否跟Pdf檔一樣！</div>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
         <label>⚡ 語速調整: <span id="rate-val">0.9</span>x</label>
         <input type="range" id="rate-range" min="0.3" max="1.5" step="0.1" value="0.9" oninput="document.getElementById('rate-val').innerText=this.value">
     </div>
-
+     <!-- 弱項清單入口 -->
     <div id="weak-menu-item"></div>
-    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+    <div id="menu-items"></div>
+</div>
+
+<div class="container" id="app-screen">
+    <button class="btn-back" onclick="location.reload()">← 返回選單</button>
+    <div id="mode-selector"></div>
+    
+    <div class="card">
+        <!-- 收藏星星 -->
+        <div id="star-icon" class="btn-star" onclick="toggleWeak()">★</div>
+        <div class="word-en" id="q-en" onclick="reveal()">EN</div>
+        <div class="word-zh" style="font-size:1.3em; color:#34495e; font-weight:bold;" id="q-zh" onclick="reveal()">ZH</div>
+    </div>
+
     <div id="menu-items"></div>
 </div>
 
@@ -58,18 +75,17 @@
     <div id="mode-selector"></div>
     
     <div class="card" onclick="reveal()">
-        <div id="star-icon" class="btn-star" onclick="toggleWeak(event)">★</div>
         <div class="word-en" id="q-en">EN</div>
-        <div class="word-zh" id="q-zh">ZH</div>
+        <div class="word-zh" style="font-size:1.3em; color:#34495e; font-weight:bold;" id="q-zh">ZH</div>
     </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:15px; margin-top:10px;">
-        <button class="nav-btn" onclick="event.stopPropagation(); prev()">◀</button>
-        <button class="btn-speak" onclick="event.stopPropagation(); speak()">🔊</button>
-        <button class="nav-btn" onclick="event.stopPropagation(); next()">▶</button>
+        <button class="nav-btn" onclick="prev()">◀</button>
+        <button class="btn-speak" onclick="speak()">🔊</button>
+        <button class="nav-btn" onclick="next()">▶</button>
     </div>
     <button class="nav-btn" style="background:#9b59b6; width:100%; margin-top:15px;" onclick="reveal()">👁️ 查看答案</button>
-    <p id="progress"></p>
+    <p id="progress" style="text-align:center; margin-top:20px; color:#bdc3c7; font-weight:bold;"></p>
 </div>
 
 <script>
@@ -390,14 +406,8 @@
         {en:"Zygomatic Fracture",zh:"顴骨骨折"}
     ];
 
-
-   
-    // 2. 重要：補回漏掉的 weakWords 定義 (LocalStorage)
-    let weakWords = JSON.parse(localStorage.getItem('med_weak_list')) || [];
     let targetVoice = null;
-    let batch = [], idx = 0, currentMode = '';
 
-    // 3. 語音相關邏輯 (整合你分開寫的兩段)
     function initAudioContext() {
         if (!targetVoice) {
             window.speechSynthesis.getVoices();
@@ -408,159 +418,163 @@
     function loadVoices() {
         const voices = window.speechSynthesis.getVoices();
         if (voices.length === 0) return;
-        // 優先找 Alex 或 Tom
-        targetVoice = voices.find(v => v.name.includes('Alex') || v.name.includes('Tom') || v.lang === 'en-US');
+        
+        targetVoice = voices.find(v => v.name === 'Alex' || v.name.includes('Alex'));
         const statusEl = document.getElementById('voice-status');
-        if (statusEl) {
+
+        if (targetVoice) {
+            statusEl.innerText = "IOS26使用者可至設定-輔助使用-閱讀與朗讀-聲音-英語-下載Tom(增強音質)-點擊設為預設";
+            statusEl.style.color = "#2ecc71";
+        } else {
+            statusEl.innerText = "IOS26使用者可至設定-輔助使用-閱讀與朗讀-聲音-英語-下載Tom(增強音質)-點擊設為預設";
             statusEl.style.color = "#2ecc71";
         }
     }
 
-    // 監聽聲音清單變化
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = loadVoices;
     }
 
-    // 4. 弱項清單邏輯
-    function updateWeakMenu() {
-        const container = document.getElementById('weak-menu-item');
-        if (!container) return;
-        container.innerHTML = '';
-        if (weakWords.length > 0) {
+    function getDates() {
+        let list = []; let d = new Date(2026, 2, 17);
+        for(let i=0; i<Math.ceil(allWords.length/15); i++) {
+            list.push(`${d.getMonth()+1}/${d.getDate()}`);
+            d.setDate(d.getDate() + (i % 2 === 0 ? 3 : 4));
+        }
+        return list;
+    }
+
+    const examDates = getDates();
+    let batch = [], idx = 0, currentMode = '';
+
+    function initMenu() {
+        const container = document.getElementById('menu-items');
+        for(let i=0; i<examDates.length; i++) {
             let div = document.createElement('div');
-            div.className = 'menu-item weak-list';
-            div.innerHTML = `<b>🔥 我的弱項加強</b><br><small>目前收錄 ${weakWords.length} 個單字</small>`;
-            div.onclick = () => {
-                batch = allWords.filter(w => weakWords.includes(w.en));
-                startApp('weak');
-            };
+            div.className = 'menu-item';
+            div.innerHTML = `<b>${examDates[i]} 階段範圍</b><br><small>新增單字：${i*15+1} - ${Math.min((i+1)*15, allWords.length)}</small>`;
+            div.onclick = (e) => { e.stopPropagation(); showMode(i); };
             container.appendChild(div);
         }
     }
 
-    function toggleWeak(e) {
-        e.stopPropagation();
-        const currentWord = batch[idx].en;
-        const star = document.getElementById('star-icon');
-        if (weakWords.includes(currentWord)) {
-            weakWords = weakWords.filter(w => w !== currentWord);
-            star.classList.remove('active');
-        } else {
-            weakWords.push(currentWord);
-            star.classList.add('active');
-        }
-        localStorage.setItem('med_weak_list', JSON.stringify(weakWords));
-        updateWeakMenu();
-    }
-
-    // 5. 畫面切換與模式設定
-    function startApp(groupType, rangeIdx) {
+    function showMode(i) {
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
-        
-        if (groupType !== 'weak') {
-            const start = rangeIdx * 15;
-            batch = allWords.slice(start, start + 15);
-        }
-
         document.getElementById('mode-selector').innerHTML = `
-            <button class="nav-btn" onclick="setMode('learn')">練習模式</button>
-            <button class="nav-btn" onclick="setMode('recite')">背誦模式</button>
-            <button class="nav-btn" onclick="setMode('random')">亂數背誦</button>
-            <button class="nav-btn" style="background:#e67e22;" onclick="setMode('exam')">挑戰模式</button>
+            <button class="nav-btn" onclick="start('learn', ${i})">練習模式</button>
+            <button class="nav-btn" onclick="start('recite', ${i})">背誦模式</button>
+            <button class="nav-btn" onclick="start('random_recite', ${i})">亂數背誦</button>
+            <button class="nav-btn" style="background:#e67e22;" onclick="start('exam', ${i})">考試模式</button>
         `;
-        setMode('learn');
     }
 
-    function setMode(m) {
-        currentMode = m;
-        if (m === 'random' || m === 'exam') {
-            batch = [...batch].sort(() => Math.random() - 0.5);
+    function start(mode, i) {
+        currentMode = mode;
+        let startIdx = i * 15;
+        let endIdx = Math.min((i + 1) * 15, allWords.length);
+        
+        // 依照四種模式分派邏輯
+        if (mode === 'learn' || mode === 'recite') {
+            // 僅本次新增 15 個，照順序
+            batch = allWords.slice(startIdx, endIdx);
+        } else if (mode === 'random_recite') {
+            // 僅本次新增 15 個，亂數排列
+            batch = allWords.slice(startIdx, endIdx).sort(() => Math.random() - 0.5);
+        } else if (mode === 'exam') {
+            // 累積從第 1 個到本次範圍的所有單字，亂數排列
+            batch = allWords.slice(0, endIdx).sort(() => Math.random() - 0.5);
         }
-        idx = 0;
+        
+        idx = 0; 
         updateUI();
+        
+        // 只有在非練習模式（背誦/考試）需要聽音辨字時，才自動發音
+        if (mode !== 'learn') setTimeout(speak, 500);
     }
 
-    // 6. UI 更新 (包含單字拆解發音)
     function updateUI() {
         window.speechSynthesis.cancel();
-        if (batch.length === 0) return;
         
-        const wordObj = batch[idx];
+        // 新增功能：將英文單字切開，讓使用者可以單獨點擊發音
         const qEn = document.getElementById('q-en');
-        const star = document.getElementById('star-icon');
-        
-        // 更新星星顏色
-        if (weakWords.includes(wordObj.en)) {
-            star.classList.add('active');
-        } else {
-            star.classList.remove('active');
-        }
-        
-        // 建立單字點擊發音
         qEn.innerHTML = '';
-        wordObj.en.split(' ').forEach((w, i, arr) => {
+        const words = batch[idx].en.split(' ');
+        words.forEach((wordText, wordIndex) => {
             const span = document.createElement('span');
-            span.innerText = w;
-            span.onclick = (e) => { e.stopPropagation(); speakWord(w); };
+            span.innerText = wordText;
+            span.style.cursor = 'pointer'; // 讓滑鼠移過去知道可以點
+            span.onclick = function(e) {
+                e.stopPropagation(); // 避免觸發整張卡片的翻面功能
+                speakWord(wordText);
+            };
             qEn.appendChild(span);
-            if (i < arr.length - 1) qEn.appendChild(document.createTextNode(' '));
+            // 補回空白字元
+            if (wordIndex < words.length - 1) {
+                qEn.appendChild(document.createTextNode(' '));
+            }
         });
 
-        document.getElementById('q-zh').innerText = wordObj.zh;
+        document.getElementById('q-zh').innerText = batch[idx].zh;
         
-        const isHidden = (currentMode !== 'learn');
-        qEn.classList.toggle('hidden', isHidden);
-        document.getElementById('q-zh').classList.toggle('hidden', isHidden);
-        
-        document.getElementById('progress').innerText = `${idx + 1} / ${batch.length}`;
-        if(isHidden) setTimeout(speak, 300);
+        // 只要不是練習模式，一律先隱藏單字
+        if (currentMode !== 'learn') {
+            document.getElementById('q-en').classList.add('hidden');
+            document.getElementById('q-zh').classList.add('hidden');
+        } else {
+            document.getElementById('q-en').classList.remove('hidden');
+            document.getElementById('q-zh').classList.remove('hidden');
+        }
+        document.getElementById('progress').innerText = `${idx+1} / ${batch.length}`;
     }
 
-    function reveal() {
+    function reveal() { 
         document.getElementById('q-en').classList.remove('hidden');
         document.getElementById('q-zh').classList.remove('hidden');
     }
 
-    function next() { idx = (idx + 1) % batch.length; updateUI(); }
-    function prev() { idx = (idx - 1 + batch.length) % batch.length; updateUI(); }
-
-    // 7. 語音執行
+    function next() { 
+        idx = (idx+1)%batch.length; 
+        updateUI(); 
+        if(currentMode !== 'learn') setTimeout(speak, 150); 
+    }
+    
+    function prev() { 
+        idx = (idx-1+batch.length)%batch.length; 
+        updateUI(); 
+        if(currentMode !== 'learn') setTimeout(speak, 150);
+    }
+    
+    // 專門用於唸整句的按鈕
     function speak() { 
         window.speechSynthesis.cancel();
-        if (!batch[idx]) return;
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
-        msg.voice = targetVoice;
-        msg.lang = 'en-US';
+        
+        if (targetVoice) {
+            msg.voice = targetVoice;
+        } else {
+            msg.lang = 'en-US';
+        }
+        
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
 
+    // 專門用於唸單一單字的新增功能
     function speakWord(text) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
-        msg.voice = targetVoice;
-        msg.lang = 'en-US';
+        
+        if (targetVoice) {
+            msg.voice = targetVoice;
+        } else {
+            msg.lang = 'en-US';
+        }
+        
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
-
-    // 8. 初始化選單
-    function initMenu() {
-        updateWeakMenu();
-        const container = document.getElementById('menu-items');
-        if (!container) return;
-        for(let i=0; i<Math.ceil(allWords.length/15); i++) {
-            let div = document.createElement('div');
-            div.className = 'menu-item';
-            div.innerHTML = `<b>第 ${i+1} 階段單字</b><br><small>範圍：${i*15+1} - ${Math.min((i+1)*15, allWords.length)}</small>`;
-            div.onclick = () => startApp('normal', i);
-            container.appendChild(div);
-        }
-    }
-
-    // 正式啟動
-
+    
     initMenu();
 </script>
 </body>
