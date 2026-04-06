@@ -496,19 +496,34 @@
     function next() { idx = (idx + 1) % batch.length; updateUI(); }
     function prev() { idx = (idx - 1 + batch.length) % batch.length; updateUI(); }
 
-    function speak() {
+    
+        // 專門用於唸整句的按鈕
+    function speak() { 
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
+        
+        if (targetVoice) {
+            msg.voice = targetVoice;
+        } else {
+            msg.lang = 'en-US';
+        }
+        
         msg.rate = document.getElementById('rate-range').value;
-        if(targetVoice) msg.voice = targetVoice;
         window.speechSynthesis.speak(msg);
     }
 
-    function speakWord(t) {
+    // 專門用於唸單一單字的新增功能
+    function speakWord(text) {
         window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(t);
+        const msg = new SpeechSynthesisUtterance(text);
+        
+        if (targetVoice) {
+            msg.voice = targetVoice;
+        } else {
+            msg.lang = 'en-US';
+        }
+        
         msg.rate = document.getElementById('rate-range').value;
-        if(targetVoice) msg.voice = targetVoice;
         window.speechSynthesis.speak(msg);
     }
 
