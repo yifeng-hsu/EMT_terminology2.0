@@ -493,84 +493,58 @@
         if (mode !== 'learn') setTimeout(speak, 500);
     }
 
+     function setMode(m) {
+        currentMode = m;
+        if (m === 'random' || m === 'exam') batch.sort(() => Math.random() - 0.5);
+        idx = 0;
+        updateUI();
+    }
+
     function updateUI() {
         window.speechSynthesis.cancel();
-        
-        // 新增功能：將英文單字切開，讓使用者可以單獨點擊發音
+        const wordObj = batch[idx];
         const qEn = document.getElementById('q-en');
+        const star = document.getElementById('star-icon');
+        
+        // 更新星星狀態
+        star.className = weakWords.includes(wordObj.en) ? 'btn-star active' : 'btn-star';
+        
+        // 處理單字點擊發音
         qEn.innerHTML = '';
-        const words = batch[idx].en.split(' ');
-        words.forEach((wordText, wordIndex) => {
+        wordObj.en.split(' ').forEach((w, i, arr) => {
             const span = document.createElement('span');
-            span.innerText = wordText;
-            span.style.cursor = 'pointer'; // 讓滑鼠移過去知道可以點
-            span.onclick = function(e) {
-                e.stopPropagation(); // 避免觸發整張卡片的翻面功能
-                speakWord(wordText);
-            };
+            span.innerText = w;
+            span.onclick = (e) => { e.stopPropagation(); speakWord(w); };
             qEn.appendChild(span);
-            // 補回空白字元
-            if (wordIndex < words.length - 1) {
-                qEn.appendChild(document.createTextNode(' '));
-            }
+            if (i < arr.length - 1) qEn.appendChild(document.createTextNode(' '));
         });
 
-        document.getElementById('q-zh').innerText = batch[idx].zh;
+        document.getElementById('q-zh').innerText = wordObj.zh;
         
-        // 只要不是練習模式，一律先隱藏單字
-        if (currentMode !== 'learn') {
-            document.getElementById('q-en').classList.add('hidden');
-            document.getElementById('q-zh').classList.add('hidden');
-        } else {
-            document.getElementById('q-en').classList.remove('hidden');
-            document.getElementById('q-zh').classList.remove('hidden');
-        }
+        // 模式顯示邏輯
+        const isHidden = (currentMode !== 'learn');
+        qEn.classList.toggle('hidden', isHidden);
+        document.getElementById('q-zh').classList.toggle('hidden', isHidden);
+        
         document.getElementById('progress').innerText = `${idx+1} / ${batch.length}`;
     }
 
-    function reveal() { 
+    function reveal() {
         document.getElementById('q-en').classList.remove('hidden');
         document.getElementById('q-zh').classList.remove('hidden');
     }
 
-    function next() { 
-        idx = (idx+1)%batch.length; 
-        updateUI(); 
-        if(currentMode !== 'learn') setTimeout(speak, 150); 
-    }
-    
-    function prev() { 
-        idx = (idx-1+batch.length)%batch.length; 
-        updateUI(); 
-        if(currentMode !== 'learn') setTimeout(speak, 150);
-    }
-    
-    // 專門用於唸整句的按鈕
-    function speak() { 
-        window.speechSynthesis.cancel();
+    function next() { idx = (idx+1)%batch.length; updateUI(); }
+    function prev() { idx = (idx-1+batch.length)%batch.length; updateUI(); }
+
+    function speak() {
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
-        
-        if (targetVoice) {
-            msg.voice = targetVoice;
-        } else {
-            msg.lang = 'en-US';
-        }
-        
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
 
-    // 專門用於唸單一單字的新增功能
-    function speakWord(text) {
-        window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        
-        if (targetVoice) {
-            msg.voice = targetVoice;
-        } else {
-            msg.lang = 'en-US';
-        }
-        
+    function speakWord(t) {
+        const msg = new SpeechSynthesisUtterance(t);
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
