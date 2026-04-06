@@ -1,3 +1,5 @@
+我其他所有東西都不要動到，我只要你幫我修好我的發音按鈕及上一個按鍵
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -70,6 +72,7 @@
     <button class="nav-btn" style="background:#9b59b6; width:100%; margin-top:15px;" onclick="reveal()">👁️ 查看答案</button>
     <p id="progress" style="text-align:center; margin-top:20px; color:#bdc3c7; font-weight:bold;"></p>
 </div>
+
 <script>
     const allWords = [
         {en:"Abdominal pain",zh:"腹部疼痛"},
@@ -388,13 +391,18 @@
         {en:"Zygomatic Fracture",zh:"顴骨骨折"}
     ];
 
-     // 初始化儲存空間
+    // 初始化儲存空間
     let weakWords = JSON.parse(localStorage.getItem('medical_weak_list')) || [];
+    let targetVoice = null;
     let batch = [], idx = 0, currentMode = '';
 
-    // 語音初始化：僅確保權限開啟，不再過濾特定人名聲音
     function initAudioContext() {
-        window.speechSynthesis.getVoices();
+        if (!targetVoice) loadVoices();
+    }
+
+    function loadVoices() {
+        const voices = window.speechSynthesis.getVoices();
+        targetVoice = voices.find(v => v.name.includes('Alex') || v.name.includes('Tom'));
     }
 
     function toggleWeak() {
@@ -414,7 +422,6 @@
 
     function updateWeakMenu() {
         const container = document.getElementById('weak-menu-item');
-        if (!container) return;
         container.innerHTML = '';
         if (weakWords.length > 0) {
             let div = document.createElement('div');
@@ -444,23 +451,21 @@
 
     function setMode(m) {
         currentMode = m;
-        if (m === 'random' || m === 'exam') {
-            batch = [...batch].sort(() => Math.random() - 0.5);
-        }
+        if (m === 'random' || m === 'exam') batch.sort(() => Math.random() - 0.5);
         idx = 0;
         updateUI();
     }
 
     function updateUI() {
         window.speechSynthesis.cancel();
-        if (batch.length === 0) return;
-        
         const wordObj = batch[idx];
         const qEn = document.getElementById('q-en');
         const star = document.getElementById('star-icon');
         
+        // 更新星星狀態
         star.className = weakWords.includes(wordObj.en) ? 'btn-star active' : 'btn-star';
         
+        // 處理單字點擊發音
         qEn.innerHTML = '';
         wordObj.en.split(' ').forEach((w, i, arr) => {
             const span = document.createElement('span');
@@ -472,13 +477,12 @@
 
         document.getElementById('q-zh').innerText = wordObj.zh;
         
+        // 模式顯示邏輯
         const isHidden = (currentMode !== 'learn');
         qEn.classList.toggle('hidden', isHidden);
         document.getElementById('q-zh').classList.toggle('hidden', isHidden);
         
         document.getElementById('progress').innerText = `${idx+1} / ${batch.length}`;
-        
-        if (isHidden) setTimeout(speak, 300);
     }
 
     function reveal() {
@@ -486,31 +490,17 @@
         document.getElementById('q-zh').classList.remove('hidden');
     }
 
-    // 修復後的 prev：確保正確向上循環
-    function prev() { 
-        idx = (idx - 1 + batch.length) % batch.length; 
-        updateUI(); 
-    }
+    function next() { idx = (idx+1)%batch.length; updateUI(); }
+    function prev() { idx = (idx-1+batch.length)%batch.length; updateUI(); }
 
-    function next() { 
-        idx = (idx + 1) % batch.length; 
-        updateUI(); 
-    }
-
-    // 簡化後的發音：直接使用系統預設聲音
     function speak() {
-        window.speechSynthesis.cancel();
-        if (!batch[idx]) return;
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
-        msg.lang = 'en-US'; // 強制指定美式英語語系
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
 
     function speakWord(t) {
-        window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(t);
-        msg.lang = 'en-US';
         msg.rate = document.getElementById('rate-range').value;
         window.speechSynthesis.speak(msg);
     }
@@ -518,6 +508,7 @@
     function initMenu() {
         const container = document.getElementById('menu-items');
         updateWeakMenu();
+        // 原本的日期選單邏輯...
         const d = new Date(2026, 2, 17);
         for(let i=0; i<Math.ceil(allWords.length/15); i++) {
             let dateStr = `${d.getMonth()+1}/${d.getDate()}`;
@@ -534,9 +525,7 @@
     }
 
     initMenu();
+    if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = loadVoices;
 </script>
-
 </body>
 </html>
-
-
