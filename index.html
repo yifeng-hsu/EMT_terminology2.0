@@ -391,18 +391,36 @@
     ];
 
 
-    let weakWords = JSON.parse(localStorage.getItem('med_weak_list')) || [];
-    let targetVoice = null;
-    let batch = [], idx = 0, currentMode = '';
+   let targetVoice = null;
 
     function initAudioContext() {
-        if (!targetVoice) loadVoices();
+        if (!targetVoice) {
+            window.speechSynthesis.getVoices();
+            loadVoices();
+        }
     }
 
     function loadVoices() {
         const voices = window.speechSynthesis.getVoices();
-        targetVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Tom') || v.name.includes('Alex')));
+        if (voices.length === 0) return;
+        
+        targetVoice = voices.find(v => v.name === 'Alex' || v.name.includes('Alex'));
+        const statusEl = document.getElementById('voice-status');
+
+        if (targetVoice) {
+            statusEl.innerText = "IOS26使用者可至設定-輔助使用-閱讀與朗讀-聲音-英語-下載Tom(增強音質)-點擊設為預設";
+            statusEl.style.color = "#2ecc71";
+        } else {
+            statusEl.innerText = "IOS26使用者可至設定-輔助使用-閱讀與朗讀-聲音-英語-下載Tom(增強音質)-點擊設為預設";
+            statusEl.style.color = "#2ecc71";
+        }
     }
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+
 
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
