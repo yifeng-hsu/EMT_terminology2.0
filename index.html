@@ -391,14 +391,7 @@
     ];
 
 
-   <script>
-    // 1. 所有的單字資料 (保留你原本的 allWords 陣列)
-    const allWords = [
-        {en:"Abdominal pain",zh:"腹部疼痛"},
-        // ... (中間省略，請保留你原本那 314 個單字)
-        {en:"Zygomatic Fracture",zh:"顴骨骨折"}
-    ];
-
+   
     // 2. 重要：補回漏掉的 weakWords 定義 (LocalStorage)
     let weakWords = JSON.parse(localStorage.getItem('med_weak_list')) || [];
     let targetVoice = null;
