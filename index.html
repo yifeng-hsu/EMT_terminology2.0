@@ -24,16 +24,14 @@
         
         .card { background: white; color: #2c3e50; height: 260px; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 25px 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; position: relative; }
         .word-en { font-size: 1.55em; font-weight: bold; margin-bottom: 10px; min-height: 2.2em; display: flex; align-items: center; justify-content: center; word-break: break-word; line-height: 1.2; width: 100%; flex-wrap: wrap; gap: 0.2em; }
-        .hidden { visibility: hidden; } /* 改用 visibility 避免高度塌陷 */
+        .hidden { visibility: hidden; }
         
         .btn-speak { background: var(--accent); font-size: 2.2em; width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin: 15px 0; padding: 0; display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .nav-btn { background: #7f8c8d; padding: 15px; border-radius: 10px; color: white; border: none; font-weight: bold; width: 100%; text-align: center; font-size: 1em; cursor: pointer; }
         .btn-back { background: #e74c3c; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 10px; color: white; border: none; font-size: 1.1em; font-weight: bold; cursor: pointer; }
         
-        /* 星星按鈕樣式 */
         .star-btn { position: absolute; top: 15px; right: 15px; font-size: 2em; color: #ccc; cursor: pointer; transition: 0.2s; z-index: 10; }
         .star-btn.active { color: var(--star); }
-        .star-count { font-size: 0.8em; color: var(--star); margin-left: 5px; }
     </style>
 </head>
 <body onpointerdown="initAudioContext()">
@@ -42,15 +40,15 @@
     <h1 style="text-align: center; margin-bottom: 15px;">🚑 醫用單字排程</h1>
     
     <div class="settings-panel">
-        <div id="voice-status">2026.4.6 更新：點擊星星可收藏弱項單字！</div>
+        <div id="voice-status">2026.4.6 更新：新增「本區弱項」特訓功能！</div>
         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
         <label>⚡ 語速調整: <span id="rate-val">0.9</span>x</label>
         <input type="range" id="rate-range" min="0.3" max="1.5" step="0.1" value="0.9" oninput="document.getElementById('rate-val').innerText=this.value">
     </div>
 
-    <!-- 弱項特訓入口 -->
+    <!-- 全局弱項入口 -->
     <div id="star-mode-entry" class="menu-item" style="border-left-color: var(--star); background: #fffdf0; display: none;" onclick="startStarMode()">
-        <b style="color: #d35400;">⭐ 弱項單字特訓模式</b><br>
+        <b style="color: #d35400;">🔥 全範圍弱項總複習</b><br>
         <small id="star-info">目前標記了 0 個單字</small>
     </div>
 
@@ -62,7 +60,6 @@
     <div id="mode-selector"></div>
     
     <div class="card">
-        <!-- 卡片內的星星 -->
         <div class="star-btn" id="star-toggle" onclick="toggleStar(event)">★</div>
         <div onclick="reveal()" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
             <div class="word-en" id="q-en">EN</div>
@@ -431,9 +428,8 @@
 
     function initMenu() {
         const container = document.getElementById('menu-items');
-        container.innerHTML = ""; // 清空
+        container.innerHTML = "";
         
-        // 更新弱項入口狀態
         const starEntry = document.getElementById('star-mode-entry');
         if (starredWords.length > 0) {
             starEntry.style.display = 'block';
@@ -454,19 +450,35 @@
     function showMode(i) {
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('mode-selector').innerHTML = `
+        
+        // 檢查當前範圍內有多少弱項單字
+        let startIdx = i * 15;
+        let endIdx = Math.min((i + 1) * 15, allWords.length);
+        let currentRangeWords = allWords.slice(startIdx, endIdx);
+        let rangeStarCount = currentRangeWords.filter(w => starredWords.includes(w.en)).length;
+
+        let modeHtml = `
             <button class="nav-btn" onclick="start('learn', ${i})">練習模式</button>
             <button class="nav-btn" onclick="start('recite', ${i})">背誦模式</button>
             <button class="nav-btn" onclick="start('random_recite', ${i})">亂數背誦</button>
             <button class="nav-btn" style="background:#e67e22;" onclick="start('exam', ${i})">考試模式</button>
         `;
+
+        // 如果本區有弱項，增加本區特訓按鈕
+        if(rangeStarCount > 0) {
+            modeHtml += `
+                <button class="nav-btn" style="background:#f1c40f; color:#2c3e50; grid-column: span 2;" 
+                onclick="start('range_star', ${i})">⭐ 本區弱項特訓 (${rangeStarCount})</button>
+            `;
+        }
+
+        document.getElementById('mode-selector').innerHTML = modeHtml;
     }
 
-    // 新增：弱項特訓入口
     function startStarMode() {
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('app-screen').style.display = 'block';
-        document.getElementById('mode-selector').innerHTML = `<h3 style="grid-column: span 2; text-align:center; color:var(--star);">⭐ 弱項特訓中</h3>`;
+        document.getElementById('mode-selector').innerHTML = `<h3 style="grid-column: span 2; text-align:center; color:var(--star);">🔥 全範圍弱項總複習</h3>`;
         currentMode = 'random_recite';
         batch = allWords.filter(w => starredWords.includes(w.en)).sort(() => Math.random() - 0.5);
         idx = 0;
@@ -485,18 +497,23 @@
             batch = allWords.slice(startIdx, endIdx).sort(() => Math.random() - 0.5);
         } else if (mode === 'exam') {
             batch = allWords.slice(0, endIdx).sort(() => Math.random() - 0.5);
+        } else if (mode === 'range_star') {
+            // 只抓當前範圍內的星號單字
+            let rangeWords = allWords.slice(startIdx, endIdx);
+            batch = rangeWords.filter(w => starredWords.includes(w.en)).sort(() => Math.random() - 0.5);
+            currentMode = 'random_recite'; // 設定為背誦邏輯
         }
         
         idx = 0; 
         updateUI();
-        if (mode !== 'learn') setTimeout(speak, 500);
+        if (currentMode !== 'learn') setTimeout(speak, 500);
     }
 
     function updateUI() {
         window.speechSynthesis.cancel();
+        if (batch.length === 0) return;
         const currentWord = batch[idx];
         
-        // 更新英文顯示 (含音節點擊)
         const qEn = document.getElementById('q-en');
         qEn.innerHTML = '';
         const words = currentWord.en.split(' ');
@@ -516,7 +533,6 @@
 
         document.getElementById('q-zh').innerText = currentWord.zh;
         
-        // 更新星星狀態
         const starBtn = document.getElementById('star-toggle');
         if (starredWords.includes(currentWord.en)) {
             starBtn.classList.add('active');
@@ -526,7 +542,6 @@
             starBtn.innerText = '☆';
         }
 
-        // 隱藏/顯示答案
         if (currentMode !== 'learn') {
             document.getElementById('q-en').classList.add('hidden');
             document.getElementById('q-zh').classList.add('hidden');
@@ -537,18 +552,12 @@
         document.getElementById('progress').innerText = `${idx+1} / ${batch.length}`;
     }
 
-    // 星星切換功能
     function toggleStar(e) {
         e.stopPropagation();
         const wordEn = batch[idx].en;
         const sIdx = starredWords.indexOf(wordEn);
-        
-        if (sIdx > -1) {
-            starredWords.splice(sIdx, 1);
-        } else {
-            starredWords.push(wordEn);
-        }
-        
+        if (sIdx > -1) starredWords.splice(sIdx, 1);
+        else starredWords.push(wordEn);
         localStorage.setItem('starredWords', JSON.stringify(starredWords));
         updateUI();
     }
@@ -559,19 +568,21 @@
     }
 
     function next() { 
+        if (batch.length === 0) return;
         idx = (idx+1)%batch.length; 
         updateUI(); 
         if(currentMode !== 'learn') setTimeout(speak, 150); 
     }
     
     function prev() { 
+        if (batch.length === 0) return;
         idx = (idx-1+batch.length)%batch.length; 
         updateUI(); 
         if(currentMode !== 'learn') setTimeout(speak, 150);
     }
     
-    // --- 原有發音功能（未更動） ---
     function speak() { 
+        if (batch.length === 0) return;
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(batch[idx].en);
         if (targetVoice) msg.voice = targetVoice; else msg.lang = 'en-US';
